@@ -1,3 +1,7 @@
+
+#include "font.h"
+
+
 extern unsigned long timer0_millis;
 
 class Timer{
@@ -160,6 +164,8 @@ Timer* timer;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  LcdInit();
+  LcdFill(0, 0, 239, 319, rgbhex(0x008484));
 //  timer = new Timer(2020, 12, 31, 23, 59, 50, &timer0_millis); //测试时分秒进位情况
 //  timer0_millis = (unsigned long)4294960000;                      //测试millis()溢出
 
@@ -168,7 +174,7 @@ void setup() {
 //  timer = new Timer(2000, 2, 28, 23, 59, 55, &timer0_millis);  //测试400年闰年的情况
 //  timer = new Timer(1900, 2, 28, 23, 59, 55, &timer0_millis);  //测试不是世纪闰年，但被100整除的情况
 
-  timer = new Timer(2020, 4, 9, 23, 59, 55, &timer0_millis);
+  timer = new Timer(2020, 4, 9, 20, 44, 00, &timer0_millis);
 }
 
 String tmp = "";
@@ -193,7 +199,13 @@ void loop() {
   tmp += (int)timer->Second;
   tmp += " Week:";
   tmp += (int)timer->Day;
-  tmp += " Millis:";
-  tmp += (unsigned long)millis();
+//  tmp += " Millis:";
+//  tmp += (unsigned long)millis();
   Serial.println(tmp);
+
+//  LcdFill(0, 0, 239, 24, rgbhex(0x008484));
+  video_putString8(8, 8, rgbhex(0xffffff), tmp.c_str());
+  delay(500);
+  video_putString8(8, 8, rgbhex(0x008484), tmp.c_str());
+//  video_putString8(0, 0, rgbhex(0xffffff), tmp.c_str());
 }
