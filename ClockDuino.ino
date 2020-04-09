@@ -10,23 +10,25 @@ class Timer{
     long Second;
     char Day;
     unsigned long *millisCounterPointer;
-    Timer(int Year, char Month, char Date, char Hour, int Minute, long Second, char Day, unsigned long *millisCounterPointer);
-    void RefreshTimer();
+    Timer(int Year, char Month, char Date, char Hour, int Minute, long Second, unsigned long *millisCounterPointer);
+    bool isLeapYear(int year);                       //判断是不是闰年
+    char calcDay(int year, int month, int day);      //计算任何一天是星期几
+    void refreshTimer();                             //刷新计时器时间
 };
 
-Timer::Timer(int Year, char Month, char Date, char Hour, int Minute, long Second, char Day, unsigned long *millisCounterPointer){
+Timer::Timer(int Year, char Month, char Date, char Hour, int Minute, long Second, unsigned long *millisCounterPointer){
   this->Year   = Year;
   this->Month  = Month;
   this->Date   = Date;
   this->Hour   = Hour;
   this->Minute = Minute;
   this->Second = Second;
-  this->Day    = Day;
+  this->Day    = this->calcDay(Year, Month, Date);
   this->millisCounterPointer = millisCounterPointer;
   *millisCounterPointer = ((unsigned long)this->Hour * 3600 + (unsigned long)this->Minute * 60 + (unsigned long)this->Second) * 1000;
 }
 
-bool isLeapYear(int year){ //是不是闰年
+bool Timer::isLeapYear(int year){ //是不是闰年
   bool isLeapYear;
   if(year % 4 == 0){
     if(year % 100 == 0){
@@ -54,7 +56,54 @@ bool isLeapYear(int year){ //是不是闰年
   }
 }
 
-void Timer::RefreshTimer(){
+char Timer::calcDay(int year, int month, int day){
+  
+  unsigned long todayDay = 0; //1900年1月1日是星期一,所以前一天是星期日
+  
+  //增加从1900年到今年的天数
+  for(int i = 1900; i < year; i++){
+    if(isLeapYear(i) == true){
+      //如果是闰年,366/7=52,366%7=2,所以哪一年会过52个星期多两天,所以来年的1月1日会比前一年晚两个工作日(休息日)
+      //e.g. 1904年1月1日是星期五,1905年1月1日是星期天,多了两天
+      todayDay += 2;
+    }
+    else{
+      //如果是平年,365%7=1,所以多一天
+      //e.g. 1901年1月1日是星期一,1902年1月1日是星期二,多了一天
+      todayDay += 1;
+    }
+    todayDay %= 7;
+  }
+
+  //增加从今年1月到这个月的天数
+  for(int i = 0; i < month; i++){
+    if(i == 1 || i == 3 || i == 5 || i == 7 || i == 8 || i == 10 || i == 12){
+      //如果是大月,31%7=3,所以多3天
+      todayDay += 3;
+    }
+    else if(i == 4 || i == 6 || i == 9 || i == 11){
+      //如果是小月,30%7=2,所以多2天
+      todayDay += 2;
+    }
+    else if(this->isLeapYear(this->Year) == true  && i == 2){
+      //如果是二月,而且是闰年,29%7=1,所以多1天
+      todayDay += 1;
+    }
+    else if(this->isLeapYear(this->Year) == false && i == 2){
+      //如果是二月,而且不是闰年,28%7=0,所以多0天,什么都不做
+      ;
+    }
+    todayDay %= 7;
+  }
+
+  //增加从这个月1日到今天的天数,并且%7
+  todayDay += day;
+  todayDay %= 7;
+  
+  return todayDay;
+}
+
+void Timer::refreshTimer(){
   //刷新天数
   while(1){
     if(*this->millisCounterPointer > 86400000){  //已经过去一天
@@ -90,11 +139,11 @@ void Timer::RefreshTimer(){
     this->Month += 1;
     this->Date  -= 30;
   }
-  else if(isLeapYear(this->Year) == true  && this->Month == 2 && this->Date > 29){ //如果是二月,而且是闰年,而且日期大于29
+  else if(this->isLeapYear(this->Year) == true  && this->Month == 2 && this->Date > 29){ //如果是二月,而且是闰年,而且日期大于29
     this->Month += 1;
     this->Date  -= 29;
   }
-  else if(isLeapYear(this->Year) == false && this->Month == 2 && this->Date > 28){ //如果是二月,而且是闰年,而且日期大于28
+  else if(this->isLeapYear(this->Year) == false && this->Month == 2 && this->Date > 28){ //如果是二月,而且不是闰年,而且日期大于28
     this->Month += 1;
     this->Date  -= 28;
   }
@@ -111,15 +160,15 @@ Timer* timer;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-//  timer = new Timer(2020, 12, 31, 23, 59, 50, 4, &timer0_millis); //测试时分秒进位情况
+//  timer = new Timer(2020, 12, 31, 23, 59, 50, &timer0_millis); //测试时分秒进位情况
 //  timer0_millis = (unsigned long)4294960000;                      //测试millis()溢出
 
-//  timer = new Timer(2008, 2, 28, 23, 59, 55, 4, &timer0_millis);  //测试4年闰年的情况
-//  timer = new Timer(2009, 2, 28, 23, 59, 55, 4, &timer0_millis);  //测试不是闰年的情况
-//  timer = new Timer(2000, 2, 28, 23, 59, 55, 4, &timer0_millis);  //测试400年闰年的情况
-//  timer = new Timer(1900, 2, 28, 23, 59, 55, 4, &timer0_millis);  //测试不是世纪闰年，但被100整除的情况
+//  timer = new Timer(2008, 2, 28, 23, 59, 55, &timer0_millis);  //测试4年闰年的情况
+//  timer = new Timer(2009, 2, 28, 23, 59, 55, &timer0_millis);  //测试不是闰年的情况
+//  timer = new Timer(2000, 2, 28, 23, 59, 55, &timer0_millis);  //测试400年闰年的情况
+//  timer = new Timer(1900, 2, 28, 23, 59, 55, &timer0_millis);  //测试不是世纪闰年，但被100整除的情况
 
-  timer = new Timer(2020, 4, 9, 16, 49, 00, 4, &timer0_millis);
+  timer = new Timer(2020, 4, 9, 23, 59, 55, &timer0_millis);
 }
 
 String tmp = "";
@@ -129,7 +178,7 @@ void loop() {
 //  a = millis();
 //  Serial.println((unsigned long)a);
 
-  timer->RefreshTimer();
+  timer->refreshTimer();
   tmp = "";
   tmp += (int)timer->Year;
   tmp += "-";
