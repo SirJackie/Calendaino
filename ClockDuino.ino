@@ -7,15 +7,14 @@ class Timer{
     char Date;
     char Hour;
     int Minute;
-    unsigned char Second;
+    long Second;
     char Day;
     unsigned long *millisCounterPointer;
-    Timer(int Year, char Month, char Date, char Hour, int Minute, unsigned char Second, char Day, unsigned long *millisCounterPointer);
+    Timer(int Year, char Month, char Date, char Hour, int Minute, long Second, char Day, unsigned long *millisCounterPointer);
     void RefreshTimer();
 };
 
-Timer::Timer(int Year, char Month, char Date, char Hour, int Minute, unsigned char Second, char Day, unsigned long *millisCounterPointer){
-  *millisCounterPointer = 0;
+Timer::Timer(int Year, char Month, char Date, char Hour, int Minute, long Second, char Day, unsigned long *millisCounterPointer){
   this->Year   = Year;
   this->Month  = Month;
   this->Date   = Date;
@@ -24,6 +23,7 @@ Timer::Timer(int Year, char Month, char Date, char Hour, int Minute, unsigned ch
   this->Second = Second;
   this->Day    = Day;
   this->millisCounterPointer = millisCounterPointer;
+  *millisCounterPointer = ((unsigned long)this->Hour * 3600 + (unsigned long)this->Minute * 60 + (unsigned long)this->Second) * 1000;
 }
 
 bool isLeapYear(int year){ //是不是闰年
@@ -73,7 +73,7 @@ void Timer::RefreshTimer(){
   this->Second %= 60;
 
   this->Hour = this->Minute / 60;
-  this->Hour %= 60;
+  this->Minute %= 60;
 
   //刷新月份
   if((this->Month == 1 || this->Month == 3 || this->Month == 5 || this->Month == 7 || this->Month == 8 || this->Month == 10 || this->Month == 12)
@@ -107,8 +107,8 @@ Timer* timer;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  timer = new Timer(2020, 4, 9, 15, 24, 00, 4, &timer0_millis);
-  timer0_millis = (unsigned long)4294960000; //让millis()提前溢出
+  timer = new Timer(2020, 4, 9, 23, 59, 50, 4, &timer0_millis);
+//  timer0_millis = (unsigned long)4294960000; //让millis()提前溢出
 }
 
 String tmp = "";
