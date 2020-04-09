@@ -31,21 +31,25 @@ bool isLeapYear(int year){ //是不是闰年
   if(year % 4 == 0){
     if(year % 100 == 0){
       if(year % 400 == 0){
+        //Serial.println("Century Leap Year");
         //是400年一次的世纪闰年(如1600,2000年)
         return true;
       }
       else{
         //不是闰年(能被100整除)
+        //Serial.println("Not Leap Year(Devide By 100)");
         return false;
       }
     }
     else{
       //是4年一次的闰年(能被4整除且不能被100整除)
+      //Serial.println("Leap Year");
       return true;
     }
   }
   else{
     //不是闰年(不能被4整除)
+    //Serial.println("Not Leap Year(Can't Devide By 4)");
     return false;
   }
 }
@@ -86,11 +90,11 @@ void Timer::RefreshTimer(){
     this->Month += 1;
     this->Date  -= 30;
   }
-  else if(isLeapYear(this->Year) && this->Month == 2 && this->Date > 29){ //如果是二月,而且是闰年,而且日期大于29
+  else if(isLeapYear(this->Year) == true  && this->Month == 2 && this->Date > 29){ //如果是二月,而且是闰年,而且日期大于29
     this->Month += 1;
     this->Date  -= 29;
   }
-  else if(this->Month == 2 && this->Date > 28){ //如果是二月,而且是闰年,而且日期大于28
+  else if(isLeapYear(this->Year) == false && this->Month == 2 && this->Date > 28){ //如果是二月,而且是闰年,而且日期大于28
     this->Month += 1;
     this->Date  -= 28;
   }
@@ -107,8 +111,15 @@ Timer* timer;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  timer = new Timer(2020, 4, 9, 23, 59, 50, 4, &timer0_millis);
-//  timer0_millis = (unsigned long)4294960000; //让millis()提前溢出
+//  timer = new Timer(2020, 12, 31, 23, 59, 50, 4, &timer0_millis); //测试时分秒进位情况
+//  timer0_millis = (unsigned long)4294960000;                      //测试millis()溢出
+
+//  timer = new Timer(2008, 2, 28, 23, 59, 55, 4, &timer0_millis);  //测试4年闰年的情况
+//  timer = new Timer(2009, 2, 28, 23, 59, 55, 4, &timer0_millis);  //测试不是闰年的情况
+//  timer = new Timer(2000, 2, 28, 23, 59, 55, 4, &timer0_millis);  //测试400年闰年的情况
+//  timer = new Timer(1900, 2, 28, 23, 59, 55, 4, &timer0_millis);  //测试不是世纪闰年，但被100整除的情况
+
+  timer = new Timer(2020, 4, 9, 16, 49, 00, 4, &timer0_millis);
 }
 
 String tmp = "";
@@ -133,5 +144,7 @@ void loop() {
   tmp += (int)timer->Second;
   tmp += " Week:";
   tmp += (int)timer->Day;
+  tmp += " Millis:";
+  tmp += (unsigned long)millis();
   Serial.println(tmp);
 }
