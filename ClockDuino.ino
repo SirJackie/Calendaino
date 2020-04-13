@@ -21,6 +21,7 @@ class Timer{
 };
 
 Timer::Timer(int Year, char Month, char Date, char Hour, int Minute, long Second, unsigned long *millisCounterPointer){
+  *millisCounterPointer = ((unsigned long)Hour * 3600 + (unsigned long)Minute * 60 + (unsigned long)Second) * 1000;
   this->Year   = Year;
   this->Month  = Month;
   this->Date   = Date;
@@ -29,7 +30,6 @@ Timer::Timer(int Year, char Month, char Date, char Hour, int Minute, long Second
   this->Second = Second;
   this->Day    = this->calcDay(Year, Month, Date);
   this->millisCounterPointer = millisCounterPointer;
-  *millisCounterPointer = ((unsigned long)this->Hour * 3600 + (unsigned long)this->Minute * 60 + (unsigned long)this->Second) * 1000;
 }
 
 bool Timer::isLeapYear(int year){ //是不是闰年
@@ -160,29 +160,36 @@ void Timer::refreshTimer(){
 }
 
 Timer* timer;
+String tmp = "";
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   LcdInit();
   LcdFill(0, 0, 239, 319, rgbhex(0x008484));
-//  timer = new Timer(2020, 12, 31, 23, 59, 50, &timer0_millis); //测试时分秒进位情况
-//  timer0_millis = (unsigned long)4294960000;                      //测试millis()溢出
-
-//  timer = new Timer(2008, 2, 28, 23, 59, 55, &timer0_millis);  //测试4年闰年的情况
-//  timer = new Timer(2009, 2, 28, 23, 59, 55, &timer0_millis);  //测试不是闰年的情况
-//  timer = new Timer(2000, 2, 28, 23, 59, 55, &timer0_millis);  //测试400年闰年的情况
-//  timer = new Timer(1900, 2, 28, 23, 59, 55, &timer0_millis);  //测试不是世纪闰年，但被100整除的情况
-
-  timer = new Timer(2020, 4, 9, 20, 44, 00, &timer0_millis);
+  timer = new Timer(2020, 4, 13, 13, 54, 00, &timer0_millis);
+  timer->refreshTimer();
+  tmp = "";
+  tmp += (int)timer->Year;
+  tmp += "-";
+  tmp += (int)timer->Month;
+  tmp += "-";
+  tmp += (int)timer->Date;
+  tmp += " ";
+  tmp += (int)timer->Hour;
+  tmp += ":";
+  tmp += (int)timer->Minute;
+  tmp += ":";
+  tmp += (int)timer->Second;
+  tmp += " Week:";
+  tmp += (int)timer->Day;
+  
+  Serial.println(tmp);
+  delay(1000);
 }
-
-String tmp = "";
 
 void loop() {
   // put your main code here, to run repeatedly:
-//  a = millis();
-//  Serial.println((unsigned long)a);
 
   timer->refreshTimer();
   tmp = "";
@@ -199,13 +206,8 @@ void loop() {
   tmp += (int)timer->Second;
   tmp += " Week:";
   tmp += (int)timer->Day;
-//  tmp += " Millis:";
-//  tmp += (unsigned long)millis();
+  
   Serial.println(tmp);
-
-//  LcdFill(0, 0, 239, 24, rgbhex(0x008484));
-  video_putString8(8, 8, rgbhex(0xffffff), tmp.c_str());
-  delay(500);
-  video_putString8(8, 8, rgbhex(0x008484), tmp.c_str());
-//  video_putString8(0, 0, rgbhex(0xffffff), tmp.c_str());
+//  video_putString8(8, 8, rgbhex(0xffffff), tmp.c_str());
+//  delay(500);
 }
