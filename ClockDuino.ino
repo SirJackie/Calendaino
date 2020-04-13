@@ -53,6 +53,7 @@ void loop() {
   tmp += (int)clk->Day;
   
   Serial.println(tmp);
-//  video_putString8(8, 8, rgbhex(0xffffff), tmp.c_str());
-//  delay(500);
+  video_putString8(8, 8, rgbhex(0xffffff), tmp.c_str());
+  delay(500);
+  video_putString8(8, 8, rgbhex(0x008484), tmp.c_str());
 }
