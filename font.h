@@ -59,11 +59,7 @@ inline int rgbhex(unsigned long hexcolor){
   unsigned short g = hexcolor & 0xFF;
   hexcolor = hexcolor >> 8;
   unsigned short r = hexcolor & 0xFF;
-  
-  Serial.println(hexcolor);
-  Serial.println(g);
-  Serial.println(b);
-  
+
   r = r / 8;
   g = g / 4;
   b = b / 8;

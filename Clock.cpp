@@ -11,6 +11,8 @@ Clock::Clock(int Year, char Month, char Date, char Hour, int Minute, long Second
   this->Day    = this->calcDay(Year, Month, Date);
   this->getMillisFunc = getMillisFunc;
   this->setMillisFunc = setMillisFunc;
+  this->setMillisFunc((this->Hour * 3600 + this->Minute * 60 + this->Second) * 1000);
+//  Serial.println
 }
 
 bool Clock::isLeapYear(int year){ //是不是闰年
