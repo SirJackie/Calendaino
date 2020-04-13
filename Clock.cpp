@@ -1,4 +1,5 @@
 #include "Clock.h"
+#include<Arduino.h>
 
 Clock::Clock(int Year, char Month, char Date, char Hour, int Minute, long Second,
              unsigned long (*getMillisFunc) (), void (*setMillisFunc) (unsigned long millisec) ){
@@ -11,8 +12,8 @@ Clock::Clock(int Year, char Month, char Date, char Hour, int Minute, long Second
   this->Day    = this->calcDay(Year, Month, Date);
   this->getMillisFunc = getMillisFunc;
   this->setMillisFunc = setMillisFunc;
-  this->setMillisFunc((this->Hour * 3600 + this->Minute * 60 + this->Second) * 1000);
-//  Serial.println
+  this->setMillisFunc(((unsigned long)this->Hour * 3600 + (unsigned long)this->Minute * 60 + (unsigned long)this->Second) * 1000);
+  Serial.println(this->getMillisFunc());
 }
 
 bool Clock::isLeapYear(int year){ //是不是闰年
@@ -92,6 +93,7 @@ char Clock::calcDay(int year, int month, int day){
 
 void Clock::refreshClock(){
   //刷新天数
+//  Serial.println(this->getMillisFunc());
   while(1){
     if(this->getMillisFunc() > 86400000){  //已经过去一天
       this->setMillisFunc(this->getMillisFunc() - 86400000);
@@ -100,6 +102,7 @@ void Clock::refreshClock(){
       if(Day == 7){
         Day = 0;
       }
+      
     }
     else{
       break;
@@ -119,7 +122,7 @@ void Clock::refreshClock(){
   if((this->Month == 1 || this->Month == 3 || this->Month == 5 || this->Month == 7 || this->Month == 8 || this->Month == 10 || this->Month == 12)
      && this->Date > 31){ //如果是大月而且日期大于31
     this->Month += 1;
-    this->Date  -= 31;
+    this->Date  -= 31;Serial.println("Hey!");
   }
   else if((this->Month == 4 || this->Month == 6 || this->Month == 9 || this->Month == 11)
           && this->Date > 30){ //如果是小月而且日期大于30
