@@ -8,7 +8,7 @@ String tmp = "";
 unsigned long millisec_recorder = 0;
 
 inline void onTimer(){
-  millisec_recorder += 1;
+  millisec_recorder += 1005;
 }
 
 unsigned long getMillisFunc(){
@@ -21,16 +21,21 @@ void setMillisFunc(unsigned long millisec){
 
 void setup() {
   // put your setup code here, to run once:
+
+  //Initialize Serial Port
   Serial.begin(9600);
-  
-  MsTimer2::set(1, onTimer); //设置中断，每1000ms进入一次中断服务程序 onTimer()
+
+  //Initialize Clock Object
+  clk = new Clock(2020, 4, 13, 19, 23, 00, getMillisFunc, setMillisFunc);
+  clk->refreshClock();
+
+  //Initialize MsTimer2 Interrupt
+  MsTimer2::set(1000, onTimer); //设置中断，每1000ms进入一次中断服务程序 onTimer()
   MsTimer2::start(); //开始计时
-  
+
+  //Initialize Lcd Screen
   LcdInit();
   LcdFill(0, 0, 239, 319, rgbhex(0x008484));
-  
-  clk = new Clock(2020, 4, 13, 13, 54, 00, getMillisFunc, setMillisFunc);
-  clk->refreshClock();
 }
 
 void loop() {
