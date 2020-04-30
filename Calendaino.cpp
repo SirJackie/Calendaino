@@ -1,51 +1,69 @@
+
 #include "Calendaino.h"
 #include<Arduino.h>
 
-Calendaino::Calendaino(int Years, char Months, char Dates, char Hours, int Minutes, long Seconds,
-             unsigned long (*getMillisFunc) (), void (*setMillisFunc) (unsigned long millisec) ){
-  this->Years   = Years;
-  this->Months  = Months;
-  this->Dates   = Dates;
-  this->Hours   = Hours;
-  this->Minutes = Minutes;
-  this->Seconds = Seconds;
-  this->Days    = this->calcDays(Years, Months, Dates);
+
+Calendaino::Calendaino
+(
+  int  Years,
+  char Months,
+  char Dates,
+  char Hours,
+  int  Minutes,
+  long Seconds,
+  unsigned long (*getMillisFunc) (),
+  void (*setMillisFunc) (unsigned long millisec)
+)
+/* 构造函数 */
+{
+  //初始化类属性的值
+  this->Years         = Years;
+  this->Months        = Months;
+  this->Dates         = Dates;
+  this->Hours         = Hours;
+  this->Minutes       = Minutes;
+  this->Seconds       = Seconds;
+  this->Days          = this->calcDays(Years, Months, Dates);
   this->getMillisFunc = getMillisFunc;
   this->setMillisFunc = setMillisFunc;
+
+  //设置开机后的毫秒数为今天0点到现在过去的毫秒数,方便计算
   this->setMillisFunc(((unsigned long)this->Hours * 3600 + (unsigned long)this->Minutes * 60 + (unsigned long)this->Seconds) * 1000);
-  Serial.println(this->getMillisFunc());
 }
 
-bool Calendaino::isLeapYear(int Years){ //是不是闰年
+
+
+bool Calendaino::isLeapYear(int Years)
+/* 闰年检测 */
+{
   bool isLeapYears;
   if(Years % 4 == 0){
     if(Years % 100 == 0){
       if(Years % 400 == 0){
-        //Serial.println("Century Leap Years");
         //是400年一次的世纪闰年(如1600,2000年)
         return true;
       }
       else{
         //不是闰年(能被100整除)
-        //Serial.println("Not Leap Years(Devide By 100)");
         return false;
       }
     }
     else{
       //是4年一次的闰年(能被4整除且不能被100整除)
-      //Serial.println("Leap Years");
       return true;
     }
   }
   else{
     //不是闰年(不能被4整除)
-    //Serial.println("Not Leap Years(Can't Devide By 4)");
     return false;
   }
 }
 
-char Calendaino::calcDays(int Years, int Months, int Days){
-  
+
+
+char Calendaino::calcDays(int Years, int Months, int Days)
+/* 计算星期几 */
+{
   unsigned long toDaysDays = 0; //1900年1月1日是星期一,所以前一天是星期日
   
   //增加从1900年到今年的天数
@@ -91,9 +109,11 @@ char Calendaino::calcDays(int Years, int Months, int Days){
   return toDaysDays;
 }
 
-void Calendaino::refresh(){
-  //刷新天数
-//  Serial.println(this->getMillisFunc());
+
+
+void Calendaino::refresh()
+/* 刷新万年历 */
+{
   while(1){
     if(this->getMillisFunc() > 86400000){  //已经过去一天
       this->setMillisFunc(this->getMillisFunc() - 86400000);
@@ -122,7 +142,7 @@ void Calendaino::refresh(){
   if((this->Months == 1 || this->Months == 3 || this->Months == 5 || this->Months == 7 || this->Months == 8 || this->Months == 10 || this->Months == 12)
      && this->Dates > 31){ //如果是大月而且日期大于31
     this->Months += 1;
-    this->Dates  -= 31;Serial.println("Hey!");
+    this->Dates  -= 31;
   }
   else if((this->Months == 4 || this->Months == 6 || this->Months == 9 || this->Months == 11)
           && this->Dates > 30){ //如果是小月而且日期大于30
