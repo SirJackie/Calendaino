@@ -1,6 +1,7 @@
 #ifndef CALENDAINO_H_
 #define CALENDAINO_H_
-#include<Arduino.h>
+#include<Arduino.h>     //For String
+#include "MsTimer2.h"   //For Interrupt Timer
 
 class Calendaino{
   public:

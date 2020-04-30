@@ -1,6 +1,22 @@
 
 #include "Calendaino.h"
-#include<Arduino.h>
+
+
+unsigned long DefaultTimer_MillisecRecorder = 0;
+
+inline void DefaultTimer_TimerCallback(){
+  DefaultTimer_MillisecRecorder += 1005;  //1000毫秒的程序时间 + 5毫秒的中断时间 (适用于12Mhz的AtMega328P)
+}
+
+unsigned long DefaultTimer_GetMillisFunc(){
+  return DefaultTimer_MillisecRecorder;
+}
+
+void DefaultTimer_SetMillisFunc(unsigned long millisec){
+  DefaultTimer_MillisecRecorder = millisec;
+}
+
+
 
 
 Calendaino::Calendaino
@@ -24,8 +40,22 @@ Calendaino::Calendaino
   this->Minutes       = Minutes;
   this->Seconds       = Seconds;
   this->Days          = this->calcDays(Years, Months, Dates);
-  this->getMillisFunc = getMillisFunc;
-  this->setMillisFunc = setMillisFunc;
+  if(getMillisFunc == NULL || setMillisFunc == NULL)
+  /* Use Default Timer */
+  {
+    this->getMillisFunc = DefaultTimer_GetMillisFunc;
+    this->setMillisFunc = DefaultTimer_SetMillisFunc;
+    
+    //Initialize MsTimer2 Interrupt
+    MsTimer2::set(1000, DefaultTimer_TimerCallback); //设置中断,每1000ms进入一次中断
+    MsTimer2::start();                               //开始计时
+  }
+  else
+  /* Use Custom Timer */
+  {
+    this->getMillisFunc = getMillisFunc;
+    this->setMillisFunc = setMillisFunc;
+  }
 
   //设置开机后的毫秒数为今天0点到现在过去的毫秒数,方便计算
   this->setMillisFunc(((unsigned long)this->Hours * 3600 + (unsigned long)this->Minutes * 60 + (unsigned long)this->Seconds) * 1000);
