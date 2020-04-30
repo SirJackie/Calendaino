@@ -1,0 +1,146 @@
+#include "Calendaino.h"
+#include<Arduino.h>
+
+Calendaino::Calendaino(int Years, char Months, char Dates, char Hours, int Minutes, long Seconds,
+             unsigned long (*getMillisFunc) (), void (*setMillisFunc) (unsigned long millisec) ){
+  this->Years   = Years;
+  this->Months  = Months;
+  this->Dates   = Dates;
+  this->Hours   = Hours;
+  this->Minutes = Minutes;
+  this->Seconds = Seconds;
+  this->Days    = this->calcDays(Years, Months, Dates);
+  this->getMillisFunc = getMillisFunc;
+  this->setMillisFunc = setMillisFunc;
+  this->setMillisFunc(((unsigned long)this->Hours * 3600 + (unsigned long)this->Minutes * 60 + (unsigned long)this->Seconds) * 1000);
+  Serial.println(this->getMillisFunc());
+}
+
+bool Calendaino::isLeapYear(int Years){ //是不是闰年
+  bool isLeapYears;
+  if(Years % 4 == 0){
+    if(Years % 100 == 0){
+      if(Years % 400 == 0){
+        //Serial.println("Century Leap Years");
+        //是400年一次的世纪闰年(如1600,2000年)
+        return true;
+      }
+      else{
+        //不是闰年(能被100整除)
+        //Serial.println("Not Leap Years(Devide By 100)");
+        return false;
+      }
+    }
+    else{
+      //是4年一次的闰年(能被4整除且不能被100整除)
+      //Serial.println("Leap Years");
+      return true;
+    }
+  }
+  else{
+    //不是闰年(不能被4整除)
+    //Serial.println("Not Leap Years(Can't Devide By 4)");
+    return false;
+  }
+}
+
+char Calendaino::calcDays(int Years, int Months, int Days){
+  
+  unsigned long toDaysDays = 0; //1900年1月1日是星期一,所以前一天是星期日
+  
+  //增加从1900年到今年的天数
+  for(int i = 1900; i < Years; i++){
+    if(isLeapYear(i) == true){
+      //如果是闰年,366/7=52,366%7=2,所以哪一年会过52个星期多两天,所以来年的1月1日会比前一年晚两个工作日(休息日)
+      //e.g. 1904年1月1日是星期五,1905年1月1日是星期天,多了两天
+      toDaysDays += 2;
+    }
+    else{
+      //如果是平年,365%7=1,所以多一天
+      //e.g. 1901年1月1日是星期一,1902年1月1日是星期二,多了一天
+      toDaysDays += 1;
+    }
+    toDaysDays %= 7;
+  }
+
+  //增加从今年1月到这个月的天数
+  for(int i = 0; i < Months; i++){
+    if(i == 1 || i == 3 || i == 5 || i == 7 || i == 8 || i == 10 || i == 12){
+      //如果是大月,31%7=3,所以多3天
+      toDaysDays += 3;
+    }
+    else if(i == 4 || i == 6 || i == 9 || i == 11){
+      //如果是小月,30%7=2,所以多2天
+      toDaysDays += 2;
+    }
+    else if(this->isLeapYear(this->Years) == true  && i == 2){
+      //如果是二月,而且是闰年,29%7=1,所以多1天
+      toDaysDays += 1;
+    }
+    else if(this->isLeapYear(this->Years) == false && i == 2){
+      //如果是二月,而且不是闰年,28%7=0,所以多0天,什么都不做
+      ;
+    }
+    toDaysDays %= 7;
+  }
+
+  //增加从这个月1日到今天的天数,并且%7
+  toDaysDays += Days;
+  toDaysDays %= 7;
+  
+  return toDaysDays;
+}
+
+void Calendaino::refresh(){
+  //刷新天数
+//  Serial.println(this->getMillisFunc());
+  while(1){
+    if(this->getMillisFunc() > 86400000){  //已经过去一天
+      this->setMillisFunc(this->getMillisFunc() - 86400000);
+      this->Dates += 1;
+      this->Days  += 1;
+      if(Days == 7){
+        Days = 0;
+      }
+      
+    }
+    else{
+      break;
+    }
+  }
+
+  //刷新时分秒
+  this->Seconds = this->getMillisFunc() / 1000;
+  
+  this->Minutes = this->Seconds / 60;
+  this->Seconds %= 60;
+
+  this->Hours = this->Minutes / 60;
+  this->Minutes %= 60;
+
+  //刷新月份
+  if((this->Months == 1 || this->Months == 3 || this->Months == 5 || this->Months == 7 || this->Months == 8 || this->Months == 10 || this->Months == 12)
+     && this->Dates > 31){ //如果是大月而且日期大于31
+    this->Months += 1;
+    this->Dates  -= 31;Serial.println("Hey!");
+  }
+  else if((this->Months == 4 || this->Months == 6 || this->Months == 9 || this->Months == 11)
+          && this->Dates > 30){ //如果是小月而且日期大于30
+    this->Months += 1;
+    this->Dates  -= 30;
+  }
+  else if(this->isLeapYear(this->Years) == true  && this->Months == 2 && this->Dates > 29){ //如果是二月,而且是闰年,而且日期大于29
+    this->Months += 1;
+    this->Dates  -= 29;
+  }
+  else if(this->isLeapYear(this->Years) == false && this->Months == 2 && this->Dates > 28){ //如果是二月,而且不是闰年,而且日期大于28
+    this->Months += 1;
+    this->Dates  -= 28;
+  }
+
+  //刷新年份
+  if(this->Months > 12){
+    this->Years  += 1;
+    this->Months =  1;
+  }
+}
