@@ -1,5 +1,6 @@
 #ifndef CALENDAINO_H_
 #define CALENDAINO_H_
+#include<Arduino.h>
 
 class Calendaino{
   public:
@@ -19,6 +20,7 @@ class Calendaino{
     bool          isLeapYear       (int years);                        //判断是不是闰年
     char          calcDays         (int years, int months, int days);  //计算任何一天是星期几
     void          refresh          ();                                 //刷新万年历的时间
+    void          getStringDate    (String* strBuffer);
 
     //Constructor 构造函数
     Calendaino

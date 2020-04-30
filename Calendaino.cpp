@@ -164,3 +164,26 @@ void Calendaino::refresh()
     this->Months =  1;
   }
 }
+
+void Calendaino::getStringDate(String* strBuffer){
+  *strBuffer = "";
+  *strBuffer += this->Years;
+  *strBuffer += "-";
+  *strBuffer += this->Months;
+  *strBuffer += "-";
+  *strBuffer += this->Dates;
+  *strBuffer += " ";
+  *strBuffer += this->Hours;
+  *strBuffer += ":";
+  *strBuffer += this->Minutes;
+  *strBuffer += ":";
+  *strBuffer += this->Seconds;
+  
+  /**/ if(this->Days == 0) *strBuffer += "Sunday";
+  else if(this->Days == 1) *strBuffer += "Monday";
+  else if(this->Days == 2) *strBuffer += "Tuesday";
+  else if(this->Days == 3) *strBuffer += "Wednesday";
+  else if(this->Days == 4) *strBuffer += "Thursday";
+  else if(this->Days == 5) *strBuffer += "Friday";
+  else if(this->Days == 6) *strBuffer += "Saturday";
+}
