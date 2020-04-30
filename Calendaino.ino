@@ -1,22 +1,23 @@
 #include "Calendaino.h"
 
-Calendaino* calendaino;
-String strBuffer = "";
+Calendaino* calendaino;  //Calendar Object
+String strBuffer = "";   //String Buffer
 
 void setup() {
-  // put your setup code here, to run once:
-
-  //Initialize Serial Port
+  
+  //Initialize serial port
   Serial.begin(9600);
 
-  //Initialize Clock Object
+  //Initialize clock object
   calendaino = new Calendaino(2020, 4, 13, 19, 23, 00, NULL, NULL);
-  calendaino->refresh();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+
+  //Refresh the calendar(calendaino:)
   calendaino->refresh();
+
+  //Convert time to string and show it
   calendaino->getStringDate(&strBuffer);
   Serial.println(strBuffer);
 }
